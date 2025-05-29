@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tạo Link Theo Yêu Cầu + Mã Hóa HTTPS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="box">
+    <h2>Tạo Link Với Tiền Tố + Suffix + Mã Hóa</h2>
+
+    <label>Nhập link gốc (mỗi dòng 1 link):</label>
+    <textarea id="inputLinks" rows="6" placeholder="https://www.facebook.com/abc..."></textarea>
+
+    <label>Số lượng link cần tạo cho mỗi dòng:</label>
+    <input type="number" id="numLinks" value="10" min="1" max="100">
+
+    <button onclick="processLinks()">Tạo Link</button>
+    <button class="copy-btn" onclick="copyLinks('allBox')">Sao chép tất cả</button>
+
+    <h3>Kết quả:</h3>
+    <div id="allBox" class="result-box"></div>
+  </div>
+
+  <script>
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function swapPrefixes(url) {
+      try {
+        const u = new URL(url);
+        const baseHost = u.hostname.replace(/^(www|web|m)\./, '');
+        const prefixes = ['www.', 'web.', 'm.'];
+        return prefixes.map(prefix => {
+          const newUrl = new URL(url);
+          newUrl.hostname = prefix + baseHost;
+          return newUrl.toString();
+        });
+      } catch {
+        return [url];
+      }
+    }
+
+    function randomSuffix(length = 10) {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let result = '&';
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    function encodeHTTPS(link) {
+      const letters = 'abcdefghijklmnopqrstuvwxyz';
+      const a = letters[Math.floor(Math.random() * letters.length)];
+      const b = letters[Math.floor(Math.random() * letters.length)];
+      return link.replace(/^https/, `h${a}${b}ps`);
+    }
+
+    function processLinks() {
+      const raw = document.getElementById('inputLinks').value.trim();
+      const num = parseInt(document.getElementById('numLinks').value) || 10;
+      const links = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      const allBox = document.getElementById('allBox');
+      allBox.innerHTML = '';
+
+      let allResults = [];
+
+      links.forEach(link => {
+        let generated = [];
+
+        // Phiên bản đổi tiền tố trước
+        const prefixes = swapPrefixes(link);
+        generated.push(...prefixes);
+
+        // Tạo thêm bằng suffix
+        const mLink = link.replace(/\/\/(www|web)\./, '//m.');
+        while (generated.length < num) {
+          const suffix = randomSuffix();
+          generated.push(mLink + suffix);
+        }
+
+        // Mã hóa tất cả link
+        const encoded = generated.slice(0, num).map(encodeHTTPS);
+        allResults.push(...encoded);
+      });
+
+      shuffleArray(allResults);
+
+      allResults.forEach(link => {
+        const a = document.createElement('a');
+        a.href = link;
+        a.target = "_blank";
+        a.textContent = link;
+        allBox.appendChild(a);
+      });
+    }
+
+    function copyLinks(boxId) {
+      const container = document.getElementById(boxId);
+      const links = Array.from(container.getElementsByTagName('a')).map(a => a.href);
+      if (links.length === 0) {
+        alert("Không có link nào để sao chép!");
+        return;
+      }
+
+      const temp = document.createElement("textarea");
+      temp.value = links.join('\n');
+      document.body.appendChild(temp);
+      temp.select();
+      try {
+        document.execCommand("copy");
+        alert(`Đã sao chép ${links.length} link.`);
+      } catch {
+        alert("Không thể sao chép.");
+      }
+      document.body.removeChild(temp);
+    }
+  </script>
+
+</body>
+</html>
