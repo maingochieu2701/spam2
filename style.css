@@ -66,3 +66,10 @@ body {
         background-color: lab(71.81% -71.56 68.81);
         box-shadow: 5px 5px 10px #e908c8e6;
     }
+    .thu a{
+      font-size: 2rem;
+      color: blue;
+      position:fixed;
+      bottom: 20px;
+      right: 20px;
+    }
