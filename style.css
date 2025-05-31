@@ -1,6 +1,57 @@
 body {
       font-family: Arial, sans-serif;
-      margin: 20px;
-      background-image: url('trang.jpg');
+      margin: 40px auto;
+      max-width: 800px;
+      padding: 20px;
+      background-image: url('locket.jpg');
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
     }
-    
+    textarea, input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 14px;
+      text-shadow: 5px 5px 10px #27da14e8;
+    }
+    button {
+      cursor: pointer;
+      margin-top: 10px;
+      border-radius: 10px;
+      background-color: hwb(187 4% 5%);
+    }
+    button:hover{
+      background-color: hsl(62, 94%, 50%);
+      color: white;
+    }
+    h2{
+      color: hsl(329, 91%, 49%);
+      text-align: center;
+      font-size: 40px;
+      margin-top: 10px;
+      text-shadow: 2px 2px 5px #27da14e8, -2px -2px 5px hsla(193, 92%, 50%, 0.91);
+    }
+    h3{
+      color: hwb(210 4% 6%);
+      
+      font-size: 30px;
+      margin-top: 10px;
+      text-shadow: 2px 2px 5px hsla(0, 93%, 49%, 0.91), -2px -2px 5px hwb(81 4% 4% / 0.91);
+    }
+    #output {
+      white-space: pre-wrap;
+      margin-top: 20px;
+      background: lab(57.89% 54.22 66.42);
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      min-height: 150px;
+      border-radius: 10px;
+    }
+    label{
+      font-weight: bold;
+      color: hsl(0, 100%, 50%);
+      text-shadow: 2px 2px 5px hsla(0, 93%, 49%, 0.91), -2px -2px 5px hwb(81 4% 4% / 0.91);
+    }
