@@ -2,94 +2,108 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Facebook Comment Link Generator</title>
+  <title>Facebook Comment ID Shuffler</title>
   <link rel="stylesheet" href="style.css">
+  
 </head>
 <body>
-  <h2>🔗 Facebook Comment Link Generator</h2>
-  <audio autoplay loop preload="auto">
-    <source src="à.mp3" type="audio/wav">
-    Không hỗ trợ trình duyệt của bạn.
-  </audio>
+  <h2>🔀 Facebook Comment ID Shuffler (Nhiều Link)</h2>
 
   <label>Nhập các link Facebook (mỗi dòng 1 link):</label>
   <textarea id="inputLinks" rows="8" placeholder="https://www.facebook.com/..."></textarea>
 
-  <label>Số lượng link muốn tạo cho mỗi link (bỏ trống = 100):</label>
+  <label>Số lượng link muốn tạo cho mỗi link gốc:</label>
   <input type="number" id="linkCount" placeholder="VD: 50">
 
-  <button onclick="generateLinks()">🚀 Tạo Link</button>
+  <button onclick="generateShuffledLinks()">🔄 Tạo Link Trộn comment_id</button>
   <button onclick="copyToClipboard()">📋 Sao chép tất cả</button>
 
   <h3>Kết quả:</h3>
   <div id="output"></div>
 
   <script>
-    function randomString(length) {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let result = '';
-      for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
+  function randomString(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
+    return result;
+  }
 
-    function generateLinks() {
-      const input = document.getElementById("inputLinks").value.trim();
-      let count = parseInt(document.getElementById("linkCount").value);
-      if (isNaN(count) || count <= 0) count = 100;
+  function generateLinks() {
+    const input = document.getElementById("inputLinks").value.trim();
+    let count = parseInt(document.getElementById("linkCount").value);
+    if (isNaN(count) || count <= 0) count = 100;
 
-      const lines = input.split("\n").map(line => line.trim()).filter(Boolean);
-      let allGeneratedLinks = [];
+    const lines = input.split("\n").map(line => line.trim()).filter(Boolean);
+    let allGeneratedLinks = [];
 
-      lines.forEach(originalUrl => {
-        try {
-          const url = new URL(originalUrl);
-          const comment_id = url.searchParams.get("comment_id") || "";
-          const pathParts = url.pathname.split("/").filter(Boolean);
+    let allCommentIds = [];
+    const linkData = [];
 
-          if (pathParts.length < 3 || pathParts[1] !== "posts") {
-            allGeneratedLinks.push(`❌ URL không hợp lệ: ${originalUrl}`);
-            return;
-          }
+    // Lưu thông tin từng link
+    lines.forEach(originalUrl => {
+      try {
+        const url = new URL(originalUrl);
+        const comment_id = url.searchParams.get("comment_id") || "";
+        const pathParts = url.pathname.split("/").filter(Boolean);
 
-          const page = pathParts[0];
-          const original_post_id = pathParts[2];
-
-          if (!original_post_id.startsWith("pfbid")) {
-            allGeneratedLinks.push(`❌ Không tìm thấy post ID: ${originalUrl}`);
-            return;
-          }
-
-          const prefix = "pfbid";
-          const suffix = original_post_id.slice(prefix.length);
-
-          for (let i = 0; i < count; i++) {
-            const new_suffix = randomString(suffix.length);
-            const new_post_id = prefix + new_suffix;
-            const new_url = `https://www.facebook.com/${page}/posts/${new_post_id}&/${original_post_id}?comment_id=${comment_id}`;
-            allGeneratedLinks.push(new_url);
-          }
-        } catch (e) {
-          allGeneratedLinks.push(`❌ Lỗi xử lý URL: ${originalUrl}`);
+        if (pathParts.length < 3 || pathParts[1] !== "posts") {
+          allGeneratedLinks.push(`❌ URL không hợp lệ: ${originalUrl}`);
+          return;
         }
-      });
 
-      // 🎲 Shuffle all links
-      for (let i = allGeneratedLinks.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [allGeneratedLinks[i], allGeneratedLinks[j]] = [allGeneratedLinks[j], allGeneratedLinks[i]];
+        const page = pathParts[0];
+        const original_post_id = pathParts[2];
+
+        if (!original_post_id.startsWith("pfbid")) {
+          allGeneratedLinks.push(`❌ Không tìm thấy post ID: ${originalUrl}`);
+          return;
+        }
+
+        allCommentIds.push(comment_id);
+        linkData.push({ page, original_post_id, comment_id });
+      } catch (e) {
+        allGeneratedLinks.push(`❌ Lỗi xử lý URL: ${originalUrl}`);
       }
+    });
 
-      document.getElementById("output").textContent = allGeneratedLinks.join("\n");
+    // Tạo link mới và trộn comment_id từ các link khác
+    linkData.forEach(({ page, original_post_id, comment_id }) => {
+      const prefix = "pfbid";
+      const suffix = original_post_id.slice(prefix.length);
+
+      const shuffledCommentIds = allCommentIds
+        .filter(id => id !== comment_id);
+      
+      for (let i = 0; i < count; i++) {
+        const new_suffix = randomString(suffix.length);
+        const new_post_id = prefix + new_suffix;
+        const random_comment_id = shuffledCommentIds.length > 0
+          ? shuffledCommentIds[Math.floor(Math.random() * shuffledCommentIds.length)]
+          : comment_id;
+
+        const new_url = `https://www.facebook.com/${page}/posts/${new_post_id}&/${original_post_id}?comment_id=${random_comment_id}`;
+        allGeneratedLinks.push(new_url);
+      }
+    });
+
+    // 🎲 Trộn kết quả
+    for (let i = allGeneratedLinks.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allGeneratedLinks[i], allGeneratedLinks[j]] = [allGeneratedLinks[j], allGeneratedLinks[i]];
     }
 
-    function copyToClipboard() {
-      const text = document.getElementById("output").textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        alert("📋 Đã sao chép toàn bộ link vào clipboard!");
-      });
-    }
-  </script>
+    document.getElementById("output").textContent = allGeneratedLinks.join("\n");
+  }
+
+  function copyToClipboard() {
+    const text = document.getElementById("output").textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      alert("📋 Đã sao chép toàn bộ link vào clipboard!");
+    });
+  }
+</script>
 </body>
 </html>
